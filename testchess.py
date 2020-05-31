@@ -1,4 +1,4 @@
-board = [["wr","wn", "wb", "wq", "wk", "wb", "wn", "wr"],["wp", "wp", "wp", "--", "wp", "wp", "wp", "wp"],["--","--","--","--","--","--","--","--"],["--","--","--","--","--","--","--","--"],["--","--","--","--","--","--","--","--"],["--","--","--","--","--","--","--","--"],["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],["br","bn", "bb", "bq", "bk", "bb", "bn", "br"]]
+board = [["wr","wn", "wb", "wq", "wk", "wb", "wn", "wr"],["wp", "wp", "wp", "wp", "--", "wp", "wp", "wp"],["--","--","--","--","--","--","--","--"],["--","--","--","--","--","--","--","--"],["--","--","--","--","--","--","--","--"],["--","--","--","--","--","--","--","--"],["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],["br","bn", "bb", "bq", "bk", "bb", "bn", "br"]]
 def showboard(board):
     for i in range(7,-1,-1):
         print(board[i])
@@ -34,8 +34,11 @@ def move(row, column, newrow, newcolumn):
         diagonal(board, row, column, newrow, newcolumn, legalmoves, "bottomleft")
 
         movewrite(board, row, column, newrow, newcolumn, piece, legalmoves)
+    if piece == "wk":
+        king(board, row, column, newrow, newcolumn, legalmoves)
+        print(legalmoves)
+        movewrite(board, row, column, newrow, newcolumn, piece, legalmoves)
 
-        
 
 
 
@@ -119,13 +122,6 @@ def straight(board, row, column, newrow, newcolumn, legalmoves):
 
 def king(board, row, column, newrow, newcolumn, legalmoves):
     for i in range(row-1, row+2):
-        for j in range(column-1,column+1):
-            legalmoves.append()
-
-
-showboard(board)
-move(0,3,3,3)
-showboard(board)
-move(3,3,4,4)
-showboard(board)
-
+        for j in range(column-1,column+2):
+            legalmoves.append((i,j))
+    legalmoves.remove((row,column))
