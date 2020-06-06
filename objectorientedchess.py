@@ -13,11 +13,14 @@ class piece:
 class king(piece):
     def __init__(self, xcord, ycord, colour):    
         super().__init__(xcord, ycord, colour)
+        
     def move(self, newx, newy): # move function
-        if abs(newx-self.xcord)<= 1 and abs(newy-self.ycord)<= 1 : # Makes sure king can't move more than one block out, king can stay in spot tho
+        xdif = abs(newx-self.xcord)
+        ydif = abs(newy-self.ycord)
+        if xdif <= 1 and ydif <= 1 and xdif + ydif != 0: # Makes sure king can't move more than one block out
             self.xcord = newx       
             self.ycord = newy
-
+            print("move completed")
 class queen(piece):
     def __init__(self, xcord, ycord, colour):    
         super().__init__(xcord, ycord, colour)
@@ -36,9 +39,12 @@ class knight(piece):
     def __init__(self, xcord, ycord, colour):    
         super().__init__(xcord, ycord, colour)
     def move(self, newx, newy): 
-        self.xcord = newx       
-        self.ycord = newy
-
+        xdif = abs(newx-self.xcord)
+        ydif = abs(newy-self.ycord)
+        if xdif != 0 and ydif != 0 and xdif + ydif == 3:
+            self.xcord = newx       
+            self.ycord = newy
+            print("move completed")
 class rook(piece):
     def __init__(self, xcord, ycord, colour):    
         super().__init__(xcord, ycord, colour)
