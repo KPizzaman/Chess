@@ -7,7 +7,7 @@ class piece:
         self.xcord = xcord
         self.ycord = ycord
         self.taken = False
-        self.colour = True # true = white ; false = black Not a racist remark
+        self.colour = colour # true = white ; false = black Not a racist remark
 
 # The king class
 class king(piece):
