@@ -5,9 +5,9 @@ import os
 
 def chessboard(screen):
     screen.fill((255,255,255))
-    for i in range(0,800, 200):
+    for i in range(0,800, 200): 
         for j in range(0,800,100):
-            pygame.draw.rect(screen, (0,0,0), (i+100*((j/100+1)%2),j,100,100), 0)
+            pygame.draw.rect(screen, (209,139,71), (i+100*((j/100+1)%2),j,100,100), 0)
 
 def playerdrag(player, event, screen):
     player.handle_click(event)
@@ -16,15 +16,10 @@ def playerdrag(player, event, screen):
 
 class piece(object):
     def __init__(self, xcord, ycord, colour):
-        self.surface.convert_alpha()
-        self.surface = pygame.transform.scale(self.surface, (100,100))
-        width, height = self.surface.get_size()
         self.xcord = xcord
         self.ycord = ycord
         self.taken = False
-        self.colour = True # true = white ; false = black Not a racist remark
-        self.rect = pygame.rect.Rect(((xcord-1)*100, (8-ycord)*100, width, height))
-        print(self.rect)
+        self.colour = colour # true = white ; false = black Not a racist remark
         self.dragging = False
 
     def mousedrag(self, dragging):
