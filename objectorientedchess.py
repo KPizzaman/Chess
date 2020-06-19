@@ -2,16 +2,12 @@ import pygame
 import os
 import math
 
-
 # The piece class which holds the positions colour and state of every piece
-turn = True
-check = False
-def ccheck(players, king):
-    global check
-    for i in players:
-        if capture(i, players, king.xcord, king.ycord):
-            check = True
-    print(check)
+turn = True # true means its white and false means its black
+check = False # is a king under check or not
+
+coltoking = lambda x : players[8] if x is not True else players[28] # lambda function that finds the correct coloured king based on a p
+taken = []
 def chessboard(screen):
     screen.fill((255,255,255))
     for i in range(0,800, 200): 
@@ -23,21 +19,26 @@ def playerdrag(player, event, screen, players):
     player.mousedrag(player.dragging)
     player.draw(screen)
 
+# The parent class for all pieces
 class piece(object):
-    def __init__(self, xcord, ycord, colour):
+    def __init__(self, xcord, ycord, colour): # has position, captured and colour
         self.xcord = xcord
         self.ycord = ycord
         self.taken = False
         self.colour = colour # true = white ; false = black Not a racist remark
-        self.dragging = False
+        self.dragging = False # used for when dragging the drawn piece is being handled
 
     def mousedrag(self, dragging):
         if dragging:
-            self.rect.left , self.rect.top = pygame.mouse.get_pos()
+            self.rect.left , self.rect.top = pygame.mouse.get_pos() # follows the mouse
             self.rect.left -= self.rect.width/2
             self.rect.top -= self.rect.height/2
 
     def handle_click(self, event, players):
+        global turn
+        global check
+        global taken
+
         mousex, mousey = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(mousex, mousey ):
@@ -45,26 +46,68 @@ class piece(object):
                     self.dragging = True
 
         if event.type == pygame.MOUSEBUTTONUP:
-                if self.rect.collidepoint(mousex, mousey ):
-                    if event.button == 1:
-                        self.dragging = False
-                        newx = round(self.rect.left/100+1)
-                        newy = round(self.rect.top/(-100)+8)
-                        boo = self.move(newx,newy)
-                        if boo and check is False:
-                            self.xcord = round(self.rect.left/100+1)
-                            self.ycord = round(self.rect.top/(-100)+8)
-                            self.rect.left = (self.xcord-1)*100
-                            self.rect.top = (8-self.ycord)*100
-                        else: 
-                            self.rect.left = (self.xcord-1)*100
-                            self.rect.top = (8-self.ycord)*100
-                        ccheck(players, players[8])
+            if self.rect.collidepoint(mousex, mousey ):
+                if event.button == 1:
+                    self.dragging = False
+                    newx = round(self.rect.left/100+1)
+                    newy = round(self.rect.top/(-100)+8)
+                    boo = self.move(newx,newy)
+                    if boo:
+                        oldx = self.xcord
+                        oldy = self.ycord   
+                        self.xcord = newx
+                        self.ycord = newy
+                        turn = not turn
+                        for i in players:
+                            if i.colour != coltoking(not self.colour).colour and i.xcord == coltoking(not self.colour).xcord and i.ycord == coltoking(not self.colour).ycord:
+                                tem = i
+                                taken.remove(i)
+                                i.xcord, i.ycord = 0, 0
+                                print(tem)
+                        try:
+                            print(tem) 
+                        except: 
+                            pass
+                        for i in players:
+                                if i.move(coltoking(not self.colour).xcord, coltoking(not self.colour).ycord):
+                                    check = True
+                                    try:
+                                        taken.remove(coltoking(self.colour))
+                                    except:
+                                        pass
+                                    break
+                                else:
+                                    check = False
+
+                        try:
+                            tem.xcord, tem.ycord = newx, newy
+                        except:
+                            pass
+
+                        turn = not turn
+                        self.xcord, self.ycord = oldx, oldy
+
+                    if boo is True and check is False:
+                        self.xcord = round(newx)
+                        self.ycord = round(newy)
+                        self.rect.left = (self.xcord-1)*100
+                        self.rect.top = (8-self.ycord)*100
+                        for i in players:
+                            if i.move(coltoking(self.colour).xcord, coltoking(self.colour).ycord):
+                                taken.remove(coltoking(self.colour))
+                                check = True
+                        turn = not turn
+  
+                    else: 
+                        self.rect.left = (self.xcord-1)*100
+                        self.rect.top = (8-self.ycord)*100
                         
 
     def draw(self, surface):
-        if not self.taken:
-            surface.blit(self.surface, (self.rect.left,self.rect.top))
+        for i in players:
+            if i in taken:
+                i.xcord, i.ycord = 0, 0
+        surface.blit(self.surface, (self.rect.left,self.rect.top))
 
     
 def gameinit():
@@ -81,14 +124,13 @@ def gameinit():
     pygame.draw
     # Loop that checks for any event in the game
     return screen, clock
-def gamerun(players, screen, clock, check):
+def gamerun(players, screen, clock):
     while True:
         for event in pygame.event.get():
             # Checks if window tries to be close
             if event.type == pygame.QUIT:
             # Closes the program altogether
                 return
-            
             chessboard(screen)
             for i in players:
                 playerdrag(i, event, screen, players)
@@ -96,24 +138,19 @@ def gamerun(players, screen, clock, check):
             clock.tick(75)
 
 def capture(self, players, newx, newy):
+    global taken
     global turn
-    if self.colour is turn:
+    if self.colour is turn:   
         for i in players:
             x = i.xcord
             y = i.ycord
             if x == newx and y == newy:
-                if i.colour != self.colour and type(i) is not king:
-                    i.taken = True
-                    i.xcord, i.ycord = 0,0
-                    turn = not turn
-                    print(turn)
-                    return True
-                elif type(i) is king and i.colour != self.colour: 
+                if i.colour != self.colour:
+                    i.taken = False
+                    taken.append(i)
                     return True
                 else:
                     return  
-        turn = not turn
-        print(turn)
         return True
 # The king class
 class king(piece):
@@ -129,6 +166,7 @@ class king(piece):
         self.rect = pygame.rect.Rect(((xcord-1)*100, (8-ycord)*100, width, height))
         
     def move(self, newx, newy): # move function
+        
         xdif = abs(newx-self.xcord)
         ydif = abs(newy-self.ycord)
         if xdif <= 1 and ydif <= 1 and xdif + ydif != 0: # Makes sure king can't move more than one block out    
@@ -147,10 +185,8 @@ def diagonal(self, newx, newy, players, stepx, stepy):
 def straight(self, newx, newy, players, stepx, stepy):
     if self.xcord == newx or self.ycord == newy:
             for i in range(self.xcord, newx, stepx):
-                print(i)
                 if i != newx:
                     if i != self.xcord:
-                        print(i)
                         for k in players:
                             if k.xcord == i and k.ycord == self.ycord:
                                 return
@@ -263,7 +299,6 @@ class pawn(piece):
             if self.colour is turn:
                 if i.xcord == newx and i.ycord == newy:
                     return 
-                turn = not turn
                 return True
     def move(self, newx, newy): 
         global turn
@@ -277,21 +312,14 @@ class pawn(piece):
                         return True
             if abs(newx-self.xcord) == 1 and newy - self.ycord == 1:
                 for i in players:
-                    if i.xcord == newx and i.ycord == newy and self.colour is turn:
-                        i.taken = True
-                        i.xcord, i.ycord = 0,0
-                        turn = not turn
+                    if capture(self, players, newx, newy):
                         return True
                 
         else:
             if abs(newx-self.xcord) == 1 and  self.ycord - newy == 1:
                 for i in players:
-                    if i.xcord == newx and i.ycord == newy and self.colour is turn:
-                        turn = not turn
-                        i.taken = True
-                        i.xcord, i.ycord = 0,0
+                    if capture(self, players, newx, newy):
                         return True
-
 
             if newx == self.xcord:
                 if self.ycord == 7 and  0 < self.ycord - newy <= 2:
@@ -329,4 +357,4 @@ players.append(king(5,8, False))
 players.append(rook(8,8, False))
 players.append(knight(7,8, False))
 players.append(bishop(6,8, False))
-gamerun(players, screen, clock, check)
+gamerun(players, screen, clock)
