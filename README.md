@@ -1,2 +1,2 @@
 # Chess
-Alpha chad commandline chess program.  
+Alpha chad ui chess program.  
